@@ -168,7 +168,7 @@ void AppControl::displayMusicStop()
     // 音楽停止画面を描画する
     mlcd.displayJpgImageCoordinate(MUSIC_NOWSTOPPING_IMG_PATH, MUSIC_NOTICE_X_CRD, MUSIC_NOTICE_Y_CRD);
     mlcd.displayJpgImageCoordinate(COMMON_BUTTON_PLAY_IMG_PATH, MUSIC_PLAY_X_CRD, MUSIC_PLAY_Y_CRD);
-    mlcd.displayJpgImageCoordinate(COMMON_BUTTON_DECIDE_IMG_PATH, MUSIC_BACK_X_CRD, MUSIC_BACK_Y_CRD);
+    mlcd.displayJpgImageCoordinate(COMMON_BUTTON_BACK_IMG_PATH, MUSIC_BACK_X_CRD, MUSIC_BACK_Y_CRD);
     mlcd.displayJpgImageCoordinate(COMMON_BUTTON_NEXT_IMG_PATH, MUSIC_NEXT_X_CRD, MUSIC_NEXT_Y_CRD);
 }
 
@@ -178,12 +178,18 @@ void AppControl::displayMusicTitle()
     mlcd.displayText(mmplay.getTitle(), MUSIC_TITLE_X_CRD, MUSIC_TITLE_Y_CRD);
 }
 
-void AppControl::displayNextMusic()
+void AppControl::displayNextMusic() // 次の音楽ファイル開き、そのファイル名を描画する
 {
+    mmplay.selectNextMusic();
+    displayMusicTitle();
 }
 
 void AppControl::displayMusicPlay()
 {
+    // 音楽再生画面を描画する
+    mlcd.displayJpgImageCoordinate(MUSIC_NOWPLAYING_IMG_PATH, MUSIC_NOTICE_X_CRD, MUSIC_NOTICE_Y_CRD);
+    mlcd.displayJpgImageCoordinate(COMMON_BUTTON_STOP_IMG_PATH, MUSIC_STOP_X_CRD, MUSIC_STOP_Y_CRD);
+    displayMusicTitle();
 }
 
 void AppControl::displayMeasureInit()
@@ -349,7 +355,8 @@ void AppControl::controlApplication()
 
             case EXIT:
                 break;
-
+                mlcd.clearDisplay();
+                setBtnAllFlgFalse();
             default:
                 break;
             }
@@ -366,30 +373,35 @@ void AppControl::controlApplication()
                 break;
 
             case DO:
-                // 左ボタンを押下 → MUSIC_PLAY
+                if (m_flag_btnA_is_pressed || m_flag_btnB_is_pressed || m_flag_btnC_is_pressed)
+                {
+                    setStateAction(MUSIC_STOP, EXIT);
+                }
+                break;
+
+            case EXIT:
                 if (m_flag_btnA_is_pressed)
                 {
-                    setBtnAFlg(true);
-                    displayMusicPlay();
-                }
-                // 右ボタンを押下 → 次の曲を表示中
-                else if (m_flag_btnC_is_pressed)
-                {
-                    setBtnCFlg(true);
-                    displayMenuInit();
+                    setStateAction(MUSIC_PLAY, ENTRY);
+                    setBtnAllFlgFalse();
                 }
                 // 中ボタンを押下 → MENU
                 else if (m_flag_btnB_is_pressed)
                 {
-                    setBtnBFlg(true);
-                    displayNextMusic();
+                    setBtnAllFlgFalse();
+                    m_focus_state = MENU_WBGT;
+                    setStateAction(MENU, ENTRY);
                 }
-
+                // 右ボタンを押下 → 次の曲を表示中
+                else if (m_flag_btnC_is_pressed)
+                {
+                    displayNextMusic();
+                    setBtnAllFlgFalse();
+                    // 次の曲表示a
+                }
                 break;
-
-            case EXIT:
-                break;
-
+                mlcd.clearDisplay();
+                mlcd.fillBackgroundWhite();
             default:
                 break;
             }
@@ -401,14 +413,30 @@ void AppControl::controlApplication()
             switch (getAction())
             {
             case ENTRY:
+                // 音楽再生
+                displayMusicPlay;
+                mmplay.prepareMP3();
+                mmplay.playMP3();
+                    if (m_flag_btnA_is_pressed || false)
+                    {
+                        displayMusicStop();
+                        // 音楽停止画面へ
+                    }
+
+                setStateAction(MUSIC_PLAY, DO);
                 break;
 
             case DO:
+                mmplay.stopMP3();
+                // 音楽停止
+                // 左ボタンを押下または音楽再生終了時 → MUSIC_STOP
+
                 break;
 
             case EXIT:
                 break;
-
+                mlcd.clearDisplay();
+                setBtnAllFlgFalse();
             default:
                 break;
             }
@@ -427,7 +455,8 @@ void AppControl::controlApplication()
 
             case EXIT:
                 break;
-
+                mlcd.clearDisplay();
+                setBtnAllFlgFalse();
             default:
                 break;
             }
@@ -461,7 +490,8 @@ void AppControl::controlApplication()
                 setBtnAllFlgFalse(); // ボタンをfalseにセット
                 m_focus_state = MENU_WBGT;
                 break;
-
+                mlcd.clearDisplay();
+                setBtnAllFlgFalse();
             default:
                 break;
             }
