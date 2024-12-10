@@ -148,6 +148,10 @@ void AppControl::focusChangeImg(FocusState current_state, FocusState next_state)
 
 void AppControl::displayWBGTInit()
 {
+    mlcd.clearDisplay();
+    mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, MEASURE_NOTICE_X_CRD, MEASURE_NOTICE_Y_CRD);
+    mlcd.displayJpgImageCoordinate(MEASURE_CM_IMG_PATH, MEASURE_CM_X_CRD, MEASURE_CM_Y_CRD);
+    mlcd.displayJpgImageCoordinate(COMMON_BUTTON_BACK_IMG_PATH, MEASURE_BACK_X_CRD, MEASURE_BACK_Y_CRD);
 }
 
 void AppControl::displayTempHumiIndex()
@@ -157,7 +161,6 @@ void AppControl::displayTempHumiIndex()
 void AppControl::displayMusicInit()
 {
     // 音楽停止画面を描画し、displayMusicTitle()を呼出して音楽ファイルのファイル名を描画する。
-
     mlcd.fillBackgroundWhite(); // 背景色を白に設定
     displayMusicStop();
     displayMusicTitle();
@@ -187,17 +190,44 @@ void AppControl::displayNextMusic() // 次の音楽ファイル開き、その�
 void AppControl::displayMusicPlay()
 {
     // 音楽再生画面を描画する
+    mlcd.fillBackgroundWhite();
     mlcd.displayJpgImageCoordinate(MUSIC_NOWPLAYING_IMG_PATH, MUSIC_NOTICE_X_CRD, MUSIC_NOTICE_Y_CRD);
     mlcd.displayJpgImageCoordinate(COMMON_BUTTON_STOP_IMG_PATH, MUSIC_STOP_X_CRD, MUSIC_STOP_Y_CRD);
-    displayMusicTitle();
 }
 
 void AppControl::displayMeasureInit()
 {
+    mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, MEASURE_NOTICE_X_CRD, MEASURE_NOTICE_Y_CRD);
+    mlcd.displayJpgImageCoordinate(MEASURE_CM_IMG_PATH, MEASURE_CM_X_CRD, MEASURE_CM_Y_CRD);
+    mlcd.displayJpgImageCoordinate(COMMON_BUTTON_BACK_IMG_PATH, MEASURE_BACK_X_CRD, MEASURE_BACK_Y_CRD);
+    displayMeasureDistance();
 }
 
 void AppControl::displayMeasureDistance()
 {
+    int ahundred = (mmdist.getDistance() / 100) % 10;
+    int ten = (mmdist.getDistance() / 10) % 10;
+    int one = mmdist.getDistance() % 10;
+    int first_decimal = (int)((mmdist.getDistance() - (int)mmdist.getDistance()) * 10);
+
+//百の位
+    mlcd.displayJpgImageCoordinate(g_str_blue[ahundred], MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
+    if (g_str_blue[ahundred] == 0) //百の値が0の場合画像を白に変える
+    {
+        mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
+    }
+    mlcd.displayJpgImageCoordinate(g_str_blue[ten], MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
+    if (g_str_blue[ahundred] <= 1 && g_str_blue[ten] == 0)
+    {
+        mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
+    }
+    mlcd.displayJpgImageCoordinate(g_str_blue[one], MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
+    if(g_str_blue[ten] <= 1 && g_str_blue[one] == 0)
+    {
+        mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
+    }
+    mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, MEASURE_DOT_X_CRD, MEASURE_DOT_Y_CRD);
+    mlcd.displayJpgImageCoordinate(g_str_blue[first_decimal], MEASURE_DECIMAL_X_CRD, MEASURE_DECIMAL_Y_CRD);
 }
 
 void AppControl::displayDateInit()
@@ -357,6 +387,7 @@ void AppControl::controlApplication()
                 break;
                 mlcd.clearDisplay();
                 setBtnAllFlgFalse();
+
             default:
                 break;
             }
@@ -373,9 +404,14 @@ void AppControl::controlApplication()
                 break;
 
             case DO:
-                if (m_flag_btnA_is_pressed || m_flag_btnB_is_pressed || m_flag_btnC_is_pressed)
+                if (m_flag_btnA_is_pressed || m_flag_btnB_is_pressed)
                 {
                     setStateAction(MUSIC_STOP, EXIT);
+                }
+                else if (m_flag_btnC_is_pressed)
+                {
+                    displayNextMusic();
+                    setBtnAllFlgFalse();
                 }
                 break;
 
@@ -392,16 +428,7 @@ void AppControl::controlApplication()
                     m_focus_state = MENU_WBGT;
                     setStateAction(MENU, ENTRY);
                 }
-                // 右ボタンを押下 → 次の曲を表示中
-                else if (m_flag_btnC_is_pressed)
-                {
-                    displayNextMusic();
-                    setBtnAllFlgFalse();
-                    // 次の曲表示a
-                }
                 break;
-                mlcd.clearDisplay();
-                mlcd.fillBackgroundWhite();
             default:
                 break;
             }
@@ -414,29 +441,35 @@ void AppControl::controlApplication()
             {
             case ENTRY:
                 // 音楽再生
-                displayMusicPlay;
+                displayMusicPlay();
                 mmplay.prepareMP3();
-                mmplay.playMP3();
-                    if (m_flag_btnA_is_pressed || false)
-                    {
-                        displayMusicStop();
-                        // 音楽停止画面へ
-                    }
-
+                while (!(m_flag_btnA_is_pressed || mmplay.playMP3()))
+                {
+                    mmplay.playMP3();
+                }
                 setStateAction(MUSIC_PLAY, DO);
                 break;
 
             case DO:
-                mmplay.stopMP3();
                 // 音楽停止
                 // 左ボタンを押下または音楽再生終了時 → MUSIC_STOP
-
+                while (mmplay.isRunningMP3())
+                {
+                    if (!mmplay.playMP3() || m_flag_btnA_is_pressed)
+                    {
+                        // 以下3行ほど記述
+                        mmplay.stopMP3();
+                        setBtnAllFlgFalse();
+                        setStateAction(MUSIC_STOP, EXIT);
+                    }
+                }
                 break;
 
             case EXIT:
-                break;
                 mlcd.clearDisplay();
-                setBtnAllFlgFalse();
+                setStateAction(MUSIC_PLAY, ENTRY);
+                break;
+
             default:
                 break;
             }
@@ -448,15 +481,30 @@ void AppControl::controlApplication()
             switch (getAction())
             {
             case ENTRY:
+                // 距離測定画面表示
+                // 測定距離表示
+                displayMeasureInit();
+                setStateAction(MEASURE, DO);
                 break;
 
             case DO:
+                // 250ms毎に測定距離表示を更新
+                displayMeasureDistance();
+                delay(250);
+                //(分岐)距離測定フォーカス時に中ボタンを押下
+                if (m_flag_btnB_is_pressed)
+                {
+                    setStateAction(MEASURE, EXIT);
+                }
                 break;
 
             case EXIT:
-                break;
+
                 mlcd.clearDisplay();
                 setBtnAllFlgFalse();
+                setStateAction(MENU, ENTRY);
+                break;
+
             default:
                 break;
             }
@@ -481,6 +529,7 @@ void AppControl::controlApplication()
                 // 中ボタンを押下→メニュー
                 if (m_flag_btnB_is_pressed)
                 {
+                    stopMP3();
                     setStateAction(DATE, EXIT);
                 }
                 break;
@@ -488,10 +537,10 @@ void AppControl::controlApplication()
             case EXIT:
                 setStateAction(MENU, ENTRY);
                 setBtnAllFlgFalse(); // ボタンをfalseにセット
+                mlcd.clearDisplay();
                 m_focus_state = MENU_WBGT;
                 break;
-                mlcd.clearDisplay();
-                setBtnAllFlgFalse();
+
             default:
                 break;
             }
