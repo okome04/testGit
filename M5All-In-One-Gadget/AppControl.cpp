@@ -197,6 +197,7 @@ void AppControl::displayMusicPlay()
 
 void AppControl::displayMeasureInit()
 {
+    mlcd.fillBackgroundWhite();
     mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, MEASURE_NOTICE_X_CRD, MEASURE_NOTICE_Y_CRD);
     mlcd.displayJpgImageCoordinate(MEASURE_CM_IMG_PATH, MEASURE_CM_X_CRD, MEASURE_CM_Y_CRD);
     mlcd.displayJpgImageCoordinate(COMMON_BUTTON_BACK_IMG_PATH, MEASURE_BACK_X_CRD, MEASURE_BACK_Y_CRD);
@@ -205,29 +206,43 @@ void AppControl::displayMeasureInit()
 
 void AppControl::displayMeasureDistance()
 {
-    int ahundred = (mmdist.getDistance() / 100) % 10;
-    int ten = (mmdist.getDistance() / 10) % 10;
-    int one = mmdist.getDistance() % 10;
-    int first_decimal = (int)((mmdist.getDistance() - (int)mmdist.getDistance()) * 10);
+    double distance1 = mmdist.getDistance();
+    int distance2 = distance1 * 10;
 
-//百の位
-    mlcd.displayJpgImageCoordinate(g_str_blue[ahundred], MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
-    if (g_str_blue[ahundred] == 0) //百の値が0の場合画像を白に変える
+    int ahundred = (distance2 / 1000) % 10;
+    int ten = (distance2 / 100) % 10;
+    int one = (distance2 / 10) % 10;
+    int first_decimal = distance2 % 10;
+
+    Serial.println(distance1);
+    if (distance2 >= 20 && distance2 < 450)
     {
-        mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
+        // 百の位
+        mlcd.displayJpgImageCoordinate(g_str_blue[ahundred], MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
+        if (ahundred == 0) // 百の値が0の場合画像を白に変える
+        {
+            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
+        }
+        // 十の位
+        mlcd.displayJpgImageCoordinate(g_str_blue[ten], MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
+        if (ahundred == 0 && ten == 0) // 十の位が0の場合画像を白に変える
+        {
+            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
+        }
+        // 一の位
+        mlcd.displayJpgImageCoordinate(g_str_blue[one], MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
+        if (ahundred == 0 && ten == 0 && one == 0) // 一の位が0の場合画像を白に変える
+        {
+            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
+        }
+        mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, MEASURE_DOT_X_CRD, MEASURE_DOT_Y_CRD);
+        mlcd.displayJpgImageCoordinate(g_str_blue[first_decimal], MEASURE_DECIMAL_X_CRD, MEASURE_DECIMAL_Y_CRD);
     }
-    mlcd.displayJpgImageCoordinate(g_str_blue[ten], MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
-    if (g_str_blue[ahundred] <= 1 && g_str_blue[ten] == 0)
-    {
-        mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
-    }
-    mlcd.displayJpgImageCoordinate(g_str_blue[one], MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
-    if(g_str_blue[ten] <= 1 && g_str_blue[one] == 0)
-    {
-        mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
-    }
-    mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, MEASURE_DOT_X_CRD, MEASURE_DOT_Y_CRD);
-    mlcd.displayJpgImageCoordinate(g_str_blue[first_decimal], MEASURE_DECIMAL_X_CRD, MEASURE_DECIMAL_Y_CRD);
+                mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
+            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
+            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
+
+
 }
 
 void AppControl::displayDateInit()
@@ -529,7 +544,7 @@ void AppControl::controlApplication()
                 // 中ボタンを押下→メニュー
                 if (m_flag_btnB_is_pressed)
                 {
-                    stopMP3();
+                    mmplay.stopMP3();
                     setStateAction(DATE, EXIT);
                 }
                 break;

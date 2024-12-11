@@ -28,7 +28,6 @@ void DrTHSensor::initAesht3x()
 
 void DrTHSensor::getTempHumi(double* temperature, double* humidity)
 {
-
     // 変数宣言
     unsigned int dac[6];
     unsigned int t, h;

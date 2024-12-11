@@ -30,6 +30,7 @@ void buttonC_isr()
 void setup()
 {
     M5.begin();
+    Serial.begin(9600);
     delay(1000);
     // 割込みピンをINPUTに設定
     pinMode(digitalPinToInterrupt(BTN_A_GPIO), INPUT);
