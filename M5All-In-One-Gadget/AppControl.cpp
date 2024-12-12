@@ -149,13 +149,37 @@ void AppControl::focusChangeImg(FocusState current_state, FocusState next_state)
 void AppControl::displayWBGTInit()
 {
     mlcd.clearDisplay();
-    mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, MEASURE_NOTICE_X_CRD, MEASURE_NOTICE_Y_CRD);
-    mlcd.displayJpgImageCoordinate(MEASURE_CM_IMG_PATH, MEASURE_CM_X_CRD, MEASURE_CM_Y_CRD);
-    mlcd.displayJpgImageCoordinate(COMMON_BUTTON_BACK_IMG_PATH, MEASURE_BACK_X_CRD, MEASURE_BACK_Y_CRD);
+    mlcd.fillBackgroundWhite(); // 背景色を白に設定
+
+    mlcd.displayJpgImageCoordinate(WBGT_TEMPERATURE_IMG_PATH, WBGT_TEMPERATURE_X_CRD, WBGT_TEMPERATURE_Y_CRD); //温度　オレンジ
+    mlcd.displayJpgImageCoordinate(WBGT_DEGREE_IMG_PATH, WBGT_DEGREE_X_CRD, WBGT_DEGREE_Y_CRD); //℃
+    mlcd.displayJpgImageCoordinate(WBGT_HUMIDITY_IMG_PATH, WBGT_HUMIDITY_X_CRD, WBGT_HUMIDITY_Y_CRD); //湿度　青
+    mlcd.displayJpgImageCoordinate(WBGT_PERCENT_IMG_PATH, WBGT_PERCENT_X_CRD, WBGT_PERCENT_Y_CRD); //％
+    mlcd.displayJpgImageCoordinate(COMMON_BUTTON_BACK_IMG_PATH, WBGT_BACK_X_CRD, WBGT_BACK_Y_CRD); //戻る
 }
 
 void AppControl::displayTempHumiIndex()
 {
+    //関数 MdWBGTMonitor::getWBGT() を呼出し、現在の温度・湿度・アラートを取得する。
+    //取得したそれぞれのデータをLCDに描画する
+    
+    // 温度の数値
+    mlcd.displayJpgImageCoordinate(*g_str_orange[], WBGT_T2DIGIT_X_CRD, WBGT_T2DIGIT_Y_CRD);     // 十の位
+    mlcd.displayJpgImageCoordinate(*g_str_orange[], WBGT_T1DIGIT_X_CRD, WBGT_T1DIGIT_Y_CRD);     // 一の位
+    mlcd.displayJpgImageCoordinate(COMMON_ORANGEDOT_IMG_PATH, WBGT_TDOT_X_CRD, WBGT_TDOT_Y_CRD); // 小数点
+    mlcd.displayJpgImageCoordinate(*g_str_orange[], WBGT_T1DECIMAL_X_CRD, WBGT_T1DECIMAL_Y_CRD); // 小数点第一位
+    // 湿度の数値
+    mlcd.displayJpgImageCoordinate(*g_str_blue[], WBGT_H2DIGIT_X_CRD, WBGT_H2DIGIT_Y_CRD);     // 十の位
+    mlcd.displayJpgImageCoordinate(*g_str_blue[], WBGT_H1DIGIT_X_CRD, WBGT_H1DIGIT_Y_CRD);     // 一の位
+    mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, WBGT_HDOT_X_CRD, WBGT_HDOT_Y_CRD); // 小数点
+    mlcd.displayJpgImageCoordinate(*g_str_blue[], WBGT_H1DECIMAL_X_CRD, WBGT_H1DECIMAL_Y_CRD); // 小数点第一
+
+    // アラート
+    mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 安全
+    mlcd.displayJpgImageCoordinate(WBGT_ATTENTION_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 注意
+    mlcd.displayJpgImageCoordinate(WBGT_ALERT_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD);     // 警戒
+    mlcd.displayJpgImageCoordinate(WBGT_DANGER_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD);    // 厳重警戒
+    mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 危険
 }
 
 void AppControl::displayMusicInit()
@@ -215,34 +239,44 @@ void AppControl::displayMeasureDistance()
     int first_decimal = distance2 % 10;
 
     Serial.println(distance1);
+    mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
+    mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
+    mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
+    mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DOT_X_CRD, MEASURE_DOT_Y_CRD);
+    mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DECIMAL_X_CRD, MEASURE_DECIMAL_Y_CRD);
     if (distance2 >= 20 && distance2 < 450)
     {
-        // 百の位
-        mlcd.displayJpgImageCoordinate(g_str_blue[ahundred], MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
-        if (ahundred == 0) // 百の値が0の場合画像を白に変える
-        {
-            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
-        }
-        // 十の位
-        mlcd.displayJpgImageCoordinate(g_str_blue[ten], MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
-        if (ahundred == 0 && ten == 0) // 十の位が0の場合画像を白に変える
-        {
-            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
-        }
-        // 一の位
-        mlcd.displayJpgImageCoordinate(g_str_blue[one], MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
-        if (ahundred == 0 && ten == 0 && one == 0) // 一の位が0の場合画像を白に変える
-        {
-            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
-        }
         mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, MEASURE_DOT_X_CRD, MEASURE_DOT_Y_CRD);
-        mlcd.displayJpgImageCoordinate(g_str_blue[first_decimal], MEASURE_DECIMAL_X_CRD, MEASURE_DECIMAL_Y_CRD);
+        // 百の位
+        if (ahundred > 0) // 百の位が0以上の場合該当の数字を表示する
+        {
+            mlcd.displayJpgImageCoordinate(g_str_blue[ahundred], MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
+        }
+
+        // 十の位
+        if (ahundred == 0 && ten > 0) // 百の位が0かつ十の位が0以上の場合0以上の数字を表示する
+        {
+            mlcd.displayJpgImageCoordinate(g_str_blue[ten], MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
+        }
+        else if (ahundred > 0 && ten == 0) // 百の位が0以上かつ十の位が0の場合0を表示する
+        {
+            mlcd.displayJpgImageCoordinate(g_str_blue[ten], MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
+        }
+
+        // 一の位
+        if (ten >= 0 && one >= 0) // 十の位が0かつ一の位が0以上の場合0以上の数字を表示する
+        {
+            mlcd.displayJpgImageCoordinate(g_str_blue[one], MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
+        }
+        else if (ten > 0 && one == 0) // 十の位が0以上かつ一の位が0の場合0を表示する
+        {
+            mlcd.displayJpgImageCoordinate(g_str_blue[one], MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
+        }
+        if (first_decimal >= 0) // 百の位が0以上の場合該当の数字を表示する
+        {
+            mlcd.displayJpgImageCoordinate(g_str_blue[first_decimal], MEASURE_DECIMAL_X_CRD, MEASURE_DECIMAL_Y_CRD);
+        }
     }
-                mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
-            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
-            mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
-
-
 }
 
 void AppControl::displayDateInit()
@@ -391,7 +425,7 @@ void AppControl::controlApplication()
             case ENTRY:
                 // 熱中症モニタ画面表示 温度・湿度・熱中症アラート表示
                 displayWBGTInit();
-
+                setStateAction(WBGT, DO);
                 break;
 
             case DO:
@@ -518,6 +552,7 @@ void AppControl::controlApplication()
                 mlcd.clearDisplay();
                 setBtnAllFlgFalse();
                 setStateAction(MENU, ENTRY);
+                m_focus_state = MENU_WBGT;
                 break;
 
             default:

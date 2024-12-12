@@ -1,0 +1,21 @@
+setup関数
+トリガーピン
+エコーピン
+シリアルビギン
+
+
+measuredistance
+
+double DrUltraSonic::measureReturnTime()
+// 超音波を発生させてから返ってくるまでの時間を変数 ｔ に格納する。tを返す。
+
+
+double MdMeasureDistance::getDistance()
+{
+//変数distanceに超音波センサーから取得した値を距離(cm単位)に変換して格納する。distanceを返す。
+
+
+
+
+return type specification for constructor invalid
+ void DrUltraSonic::DrUltraSonic(int echo_pin, int trig_pin)
