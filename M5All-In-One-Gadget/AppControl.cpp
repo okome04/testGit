@@ -162,7 +162,7 @@ void AppControl::displayTempHumiIndex()
 {
     //関数 MdWBGTMonitor::getWBGT() を呼出し、現在の温度・湿度・アラートを取得する。
     //取得したそれぞれのデータをLCDに描画する
-    
+    /*
     // 温度の数値
     mlcd.displayJpgImageCoordinate(*g_str_orange[], WBGT_T2DIGIT_X_CRD, WBGT_T2DIGIT_Y_CRD);     // 十の位
     mlcd.displayJpgImageCoordinate(*g_str_orange[], WBGT_T1DIGIT_X_CRD, WBGT_T1DIGIT_Y_CRD);     // 一の位
@@ -180,6 +180,7 @@ void AppControl::displayTempHumiIndex()
     mlcd.displayJpgImageCoordinate(WBGT_ALERT_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD);     // 警戒
     mlcd.displayJpgImageCoordinate(WBGT_DANGER_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD);    // 厳重警戒
     mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 危険
+    */
 }
 
 void AppControl::displayMusicInit()
