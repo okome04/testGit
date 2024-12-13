@@ -12,29 +12,28 @@ void MdWBGTMonitor::init()
 void MdWBGTMonitor::getWBGT(double* temperature, double* humidity, WbgtIndex* index)
 {
     dthsen.getTempHumi(temperature, humidity);
-    int calc_index = 0.68 * (*temperature) + 0.12 * (*humidity);
+    static int calc_index = 0.68 * (*temperature) + 0.12 * (*humidity);
     Serial.println(calc_index);
 
-/*
     if (calc_index < 15)
     {
-        WbgtIndex 変数名 = SAFE;
+        *index = SAFE;
     }
-    else if (calc_index < 24)
+    else if (calc_index < 24 && calc_index > 15)
     {
-        WbgtIndex 変数名 = ATTENTION;
+        *index = ATTENTION;
     }
-    else if (calc_index < 27)
+    else if (calc_index < 27 && calc_index > 24)
     {
-        WbgtIndex 変数名 = ALERT;
+        *index = ALERT;
     }
-    else if (calc_index < 30)
+    else if (calc_index < 30 && calc_index > 27)
     {
-        WbgtIndex 変数名 = HIGH_ALERT;
+        *index = HIGH_ALERT;
     }
-    else
+    else if (calc_index > 31)
     {
-        WbgtIndex 変数名 = DANGER;
+        *index = DANGER;
     }
-    */
+    Serial.println(*index);
 }

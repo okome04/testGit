@@ -168,26 +168,54 @@ void AppControl::displayTempHumiIndex()
     Serial.println(temperature);
     Serial.println(humidity);
 
-    // 関数 MdWBGTMonitor::getWBGT() を呼出し、現在の温度・湿度・アラートを取得する。
-    /*
+    // 温度
+
+    double temperature1 = temperature;
+    int temperature2 = temperature1 * 10;
+
+    int temperature_ten = (temperature2 / 100) % 10;
+    int temperature_one = (temperature2 / 10) % 10;
+    int temperature_first_decimal = temperature2 % 10;
+
+    // 湿度
+    double humidity1 = humidity;
+    int humidity2 = humidity1 * 10;
+
+    int humidity_ten = (humidity2 / 100) % 10;
+    int humidity_one = (humidity2 / 10) % 10;
+    int humidity_first_decimal = humidity2 % 10;
+
     // 温度の数値
-    mlcd.displayJpgImageCoordinate(*g_str_orange[], WBGT_T2DIGIT_X_CRD, WBGT_T2DIGIT_Y_CRD);     // 十の位
-    mlcd.displayJpgImageCoordinate(*g_str_orange[], WBGT_T1DIGIT_X_CRD, WBGT_T1DIGIT_Y_CRD);     // 一の位
-    mlcd.displayJpgImageCoordinate(COMMON_ORANGEDOT_IMG_PATH, WBGT_TDOT_X_CRD, WBGT_TDOT_Y_CRD); // 小数点
-    mlcd.displayJpgImageCoordinate(*g_str_orange[], WBGT_T1DECIMAL_X_CRD, WBGT_T1DECIMAL_Y_CRD); // 小数点第一位
+    mlcd.displayJpgImageCoordinate(*g_str_orange[temperature_ten], WBGT_T2DIGIT_X_CRD, WBGT_T2DIGIT_Y_CRD);               // 十の位
+    mlcd.displayJpgImageCoordinate(*g_str_orange[temperature_one], WBGT_T1DIGIT_X_CRD, WBGT_T1DIGIT_Y_CRD);               // 一の位
+    mlcd.displayJpgImageCoordinate(COMMON_ORANGEDOT_IMG_PATH, WBGT_TDOT_X_CRD, WBGT_TDOT_Y_CRD);                          // 小数点
+    mlcd.displayJpgImageCoordinate(*g_str_orange[temperature_first_decimal], WBGT_T1DECIMAL_X_CRD, WBGT_T1DECIMAL_Y_CRD); // 小数点第一位
+
     // 湿度の数値
-    mlcd.displayJpgImageCoordinate(*g_str_blue[], WBGT_H2DIGIT_X_CRD, WBGT_H2DIGIT_Y_CRD);     // 十の位
-    mlcd.displayJpgImageCoordinate(*g_str_blue[], WBGT_H1DIGIT_X_CRD, WBGT_H1DIGIT_Y_CRD);     // 一の位
-    mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, WBGT_HDOT_X_CRD, WBGT_HDOT_Y_CRD); // 小数点
-    mlcd.displayJpgImageCoordinate(*g_str_blue[], WBGT_H1DECIMAL_X_CRD, WBGT_H1DECIMAL_Y_CRD); // 小数点第一
+    mlcd.displayJpgImageCoordinate(*g_str_blue[humidity_ten], WBGT_H2DIGIT_X_CRD, WBGT_H2DIGIT_Y_CRD);               // 十の位
+    mlcd.displayJpgImageCoordinate(*g_str_blue[humidity_one], WBGT_H1DIGIT_X_CRD, WBGT_H1DIGIT_Y_CRD);               // 一の位
+    mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, WBGT_HDOT_X_CRD, WBGT_HDOT_Y_CRD);                       // 小数点
+    mlcd.displayJpgImageCoordinate(*g_str_blue[humidity_first_decimal], WBGT_H1DECIMAL_X_CRD, WBGT_H1DECIMAL_Y_CRD); // 小数点第一
 
     // アラート
-    mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 安全
-    mlcd.displayJpgImageCoordinate(WBGT_ATTENTION_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 注意
-    mlcd.displayJpgImageCoordinate(WBGT_ALERT_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD);     // 警戒
-    mlcd.displayJpgImageCoordinate(WBGT_DANGER_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD);    // 厳重警戒
-    mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 危険
-    */
+    switch (WbgtIndex)
+    {
+    case SAFE:
+        mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 安全
+        break;
+    case ATTENTION:
+        mlcd.displayJpgImageCoordinate(WBGT_ATTENTION_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 注意
+        break;
+    case ALERT:
+        mlcd.displayJpgImageCoordinate(WBGT_ALERT_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 警戒
+        break;
+    case HIGH_ALERT:
+        mlcd.displayJpgImageCoordinate(WBGT_DANGER_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 厳重警戒
+        break;
+    case DANGER:
+        mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 危険
+        break;
+    }
 }
 
 void AppControl::displayMusicInit()
@@ -303,6 +331,7 @@ void AppControl::displayDateUpdate()
 void AppControl::controlApplication()
 {
     mmplay.init();
+    mwbgt.init();
     while (1) // 無限ループ
     {
         switch (getState())
