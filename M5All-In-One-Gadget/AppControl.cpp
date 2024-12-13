@@ -151,17 +151,24 @@ void AppControl::displayWBGTInit()
     mlcd.clearDisplay();
     mlcd.fillBackgroundWhite(); // 背景色を白に設定
 
-    mlcd.displayJpgImageCoordinate(WBGT_TEMPERATURE_IMG_PATH, WBGT_TEMPERATURE_X_CRD, WBGT_TEMPERATURE_Y_CRD); //温度　オレンジ
-    mlcd.displayJpgImageCoordinate(WBGT_DEGREE_IMG_PATH, WBGT_DEGREE_X_CRD, WBGT_DEGREE_Y_CRD); //℃
-    mlcd.displayJpgImageCoordinate(WBGT_HUMIDITY_IMG_PATH, WBGT_HUMIDITY_X_CRD, WBGT_HUMIDITY_Y_CRD); //湿度　青
-    mlcd.displayJpgImageCoordinate(WBGT_PERCENT_IMG_PATH, WBGT_PERCENT_X_CRD, WBGT_PERCENT_Y_CRD); //％
-    mlcd.displayJpgImageCoordinate(COMMON_BUTTON_BACK_IMG_PATH, WBGT_BACK_X_CRD, WBGT_BACK_Y_CRD); //戻る
+    mlcd.displayJpgImageCoordinate(WBGT_TEMPERATURE_IMG_PATH, WBGT_TEMPERATURE_X_CRD, WBGT_TEMPERATURE_Y_CRD); // 温度　オレンジ
+    mlcd.displayJpgImageCoordinate(WBGT_DEGREE_IMG_PATH, WBGT_DEGREE_X_CRD, WBGT_DEGREE_Y_CRD);                // ℃
+    mlcd.displayJpgImageCoordinate(WBGT_HUMIDITY_IMG_PATH, WBGT_HUMIDITY_X_CRD, WBGT_HUMIDITY_Y_CRD);          // 湿度　青
+    mlcd.displayJpgImageCoordinate(WBGT_PERCENT_IMG_PATH, WBGT_PERCENT_X_CRD, WBGT_PERCENT_Y_CRD);             // ％
+    mlcd.displayJpgImageCoordinate(COMMON_BUTTON_BACK_IMG_PATH, WBGT_BACK_X_CRD, WBGT_BACK_Y_CRD);             // 戻る
 }
 
 void AppControl::displayTempHumiIndex()
 {
-    //関数 MdWBGTMonitor::getWBGT() を呼出し、現在の温度・湿度・アラートを取得する。
-    //取得したそれぞれのデータをLCDに描画する
+    WbgtIndex index = SAFE;
+    double temperature = 0;
+    double humidity = 0;
+    mwbgt.getWBGT(&temperature, &humidity, &index);
+
+    Serial.println(temperature);
+    Serial.println(humidity);
+
+    // 関数 MdWBGTMonitor::getWBGT() を呼出し、現在の温度・湿度・アラートを取得する。
     /*
     // 温度の数値
     mlcd.displayJpgImageCoordinate(*g_str_orange[], WBGT_T2DIGIT_X_CRD, WBGT_T2DIGIT_Y_CRD);     // 十の位
@@ -427,6 +434,7 @@ void AppControl::controlApplication()
                 // 熱中症モニタ画面表示 温度・湿度・熱中症アラート表示
                 displayWBGTInit();
                 setStateAction(WBGT, DO);
+                displayTempHumiIndex();
                 break;
 
             case DO:
