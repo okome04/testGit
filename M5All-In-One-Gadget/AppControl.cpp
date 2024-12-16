@@ -1,6 +1,7 @@
 #include "AppControl.h"
 #include <Arduino.h>
 #include <M5Stack.h>
+#include<Wire.h>
 
 // AppControlクラスが直接従えているクラスをインスタンス化
 MdLcd mlcd;
@@ -148,6 +149,7 @@ void AppControl::focusChangeImg(FocusState current_state, FocusState next_state)
 
 void AppControl::displayWBGTInit()
 {
+    // 熱中症モニタの初期画面を描画する
     mlcd.clearDisplay();
     mlcd.fillBackgroundWhite(); // 背景色を白に設定
 
@@ -160,6 +162,7 @@ void AppControl::displayWBGTInit()
 
 void AppControl::displayTempHumiIndex()
 {
+    // 熱中症モニタの画面に温度・湿度・アラートを描画する
     WbgtIndex index = SAFE;
     double temperature = 0;
     double humidity = 0;
@@ -169,13 +172,17 @@ void AppControl::displayTempHumiIndex()
     Serial.println(humidity);
 
     // 温度
-
     double temperature1 = temperature;
     int temperature2 = temperature1 * 10;
 
     int temperature_ten = (temperature2 / 100) % 10;
     int temperature_one = (temperature2 / 10) % 10;
     int temperature_first_decimal = temperature2 % 10;
+
+    mlcd.displayJpgImageCoordinate(g_str_orange[temperature_ten], WBGT_T2DIGIT_X_CRD, WBGT_T2DIGIT_Y_CRD);               // 十の位
+    mlcd.displayJpgImageCoordinate(g_str_orange[temperature_one], WBGT_T1DIGIT_X_CRD, WBGT_T1DIGIT_Y_CRD);               // 一の位
+    mlcd.displayJpgImageCoordinate(COMMON_ORANGEDOT_IMG_PATH, WBGT_TDOT_X_CRD, WBGT_TDOT_Y_CRD);                         // 小数点
+    mlcd.displayJpgImageCoordinate(g_str_orange[temperature_first_decimal], WBGT_T1DECIMAL_X_CRD, WBGT_T1DECIMAL_Y_CRD); // 小数点第一位
 
     // 湿度
     double humidity1 = humidity;
@@ -185,20 +192,13 @@ void AppControl::displayTempHumiIndex()
     int humidity_one = (humidity2 / 10) % 10;
     int humidity_first_decimal = humidity2 % 10;
 
-    // 温度の数値
-    mlcd.displayJpgImageCoordinate(*g_str_orange[temperature_ten], WBGT_T2DIGIT_X_CRD, WBGT_T2DIGIT_Y_CRD);               // 十の位
-    mlcd.displayJpgImageCoordinate(*g_str_orange[temperature_one], WBGT_T1DIGIT_X_CRD, WBGT_T1DIGIT_Y_CRD);               // 一の位
-    mlcd.displayJpgImageCoordinate(COMMON_ORANGEDOT_IMG_PATH, WBGT_TDOT_X_CRD, WBGT_TDOT_Y_CRD);                          // 小数点
-    mlcd.displayJpgImageCoordinate(*g_str_orange[temperature_first_decimal], WBGT_T1DECIMAL_X_CRD, WBGT_T1DECIMAL_Y_CRD); // 小数点第一位
-
-    // 湿度の数値
-    mlcd.displayJpgImageCoordinate(*g_str_blue[humidity_ten], WBGT_H2DIGIT_X_CRD, WBGT_H2DIGIT_Y_CRD);               // 十の位
-    mlcd.displayJpgImageCoordinate(*g_str_blue[humidity_one], WBGT_H1DIGIT_X_CRD, WBGT_H1DIGIT_Y_CRD);               // 一の位
-    mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, WBGT_HDOT_X_CRD, WBGT_HDOT_Y_CRD);                       // 小数点
-    mlcd.displayJpgImageCoordinate(*g_str_blue[humidity_first_decimal], WBGT_H1DECIMAL_X_CRD, WBGT_H1DECIMAL_Y_CRD); // 小数点第一
+    mlcd.displayJpgImageCoordinate(g_str_blue[humidity_ten], WBGT_H2DIGIT_X_CRD, WBGT_H2DIGIT_Y_CRD);               // 十の位
+    mlcd.displayJpgImageCoordinate(g_str_blue[humidity_one], WBGT_H1DIGIT_X_CRD, WBGT_H1DIGIT_Y_CRD);               // 一の位
+    mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, WBGT_HDOT_X_CRD, WBGT_HDOT_Y_CRD);                      // 小数点
+    mlcd.displayJpgImageCoordinate(g_str_blue[humidity_first_decimal], WBGT_H1DECIMAL_X_CRD, WBGT_H1DECIMAL_Y_CRD); // 小数点第一
 
     // アラート
-    switch (WbgtIndex)
+    switch (index)
     {
     case SAFE:
         mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 安全
@@ -238,7 +238,9 @@ void AppControl::displayMusicStop()
 void AppControl::displayMusicTitle()
 {
     // 関数 MdMusicPlayer::getTitle()により音楽ファイルのファイル名を取得し、それを描画する
+    mlcd.displayText("                               ", MUSIC_TITLE_X_CRD, MUSIC_TITLE_Y_CRD);
     mlcd.displayText(mmplay.getTitle(), MUSIC_TITLE_X_CRD, MUSIC_TITLE_Y_CRD);
+
 }
 
 void AppControl::displayNextMusic() // 次の音楽ファイル開き、そのファイル名を描画する
@@ -468,13 +470,19 @@ void AppControl::controlApplication()
 
             case DO:
                 // 100ms毎に温度、湿度、熱中症アラート表示を更新
+                displayTempHumiIndex();
+                delay(100);
+                if (m_flag_btnB_is_pressed)
+                {
+                    setStateAction(WBGT, EXIT);
+                }
                 break;
 
             case EXIT:
-                break;
                 mlcd.clearDisplay();
                 setBtnAllFlgFalse();
-
+                setStateAction(MENU, ENTRY);
+                break;
             default:
                 break;
             }
