@@ -1,7 +1,7 @@
 #include "AppControl.h"
 #include <Arduino.h>
 #include <M5Stack.h>
-#include<Wire.h>
+#include <Wire.h>
 
 // AppControlクラスが直接従えているクラスをインスタンス化
 MdLcd mlcd;
@@ -201,7 +201,7 @@ void AppControl::displayTempHumiIndex()
     switch (index)
     {
     case SAFE:
-        mlcd.displayJpgImageCoordinate(MEASURE_NOTICE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 安全
+        mlcd.displayJpgImageCoordinate(WBGT_SAFE_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 安全
         break;
     case ATTENTION:
         mlcd.displayJpgImageCoordinate(WBGT_ATTENTION_IMG_PATH, WBGT_NOTICE_X_CRD, WBGT_NOTICE_Y_CRD); // 注意
@@ -221,7 +221,6 @@ void AppControl::displayTempHumiIndex()
 void AppControl::displayMusicInit()
 {
     // 音楽停止画面を描画し、displayMusicTitle()を呼出して音楽ファイルのファイル名を描画する。
-    mlcd.fillBackgroundWhite(); // 背景色を白に設定
     displayMusicStop();
     displayMusicTitle();
 }
@@ -240,7 +239,6 @@ void AppControl::displayMusicTitle()
     // 関数 MdMusicPlayer::getTitle()により音楽ファイルのファイル名を取得し、それを描画する
     mlcd.displayText("                               ", MUSIC_TITLE_X_CRD, MUSIC_TITLE_Y_CRD);
     mlcd.displayText(mmplay.getTitle(), MUSIC_TITLE_X_CRD, MUSIC_TITLE_Y_CRD);
-
 }
 
 void AppControl::displayNextMusic() // 次の音楽ファイル開き、そのファイル名を描画する
@@ -252,7 +250,6 @@ void AppControl::displayNextMusic() // 次の音楽ファイル開き、その�
 void AppControl::displayMusicPlay()
 {
     // 音楽再生画面を描画する
-    mlcd.fillBackgroundWhite();
     mlcd.displayJpgImageCoordinate(MUSIC_NOWPLAYING_IMG_PATH, MUSIC_NOTICE_X_CRD, MUSIC_NOTICE_Y_CRD);
     mlcd.displayJpgImageCoordinate(COMMON_BUTTON_STOP_IMG_PATH, MUSIC_STOP_X_CRD, MUSIC_STOP_Y_CRD);
 }
@@ -279,9 +276,6 @@ void AppControl::displayMeasureDistance()
     Serial.println(distance1);
     mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT3_X_CRD, MEASURE_DIGIT3_Y_CRD);
     mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT2_X_CRD, MEASURE_DIGIT2_Y_CRD);
-    mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DIGIT1_X_CRD, MEASURE_DIGIT1_Y_CRD);
-    mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DOT_X_CRD, MEASURE_DOT_Y_CRD);
-    mlcd.displayJpgImageCoordinate(COMMON_BLUEFILLWHITE_IMG_PATH, MEASURE_DECIMAL_X_CRD, MEASURE_DECIMAL_Y_CRD);
     if (distance2 >= 20 && distance2 < 450)
     {
         mlcd.displayJpgImageCoordinate(COMMON_BLUEDOT_IMG_PATH, MEASURE_DOT_X_CRD, MEASURE_DOT_Y_CRD);
@@ -357,12 +351,12 @@ void AppControl::controlApplication()
                 {
                     setStateAction(TITLE, EXIT);
                 }
+                Serial.println("◎TITLE");
                 break;
 
             case EXIT:
                 setBtnAllFlgFalse(); // ボタンをfalseにセット
                 mlcd.clearDisplay(); // 画面をクリア
-
                 setStateAction(MENU, ENTRY);
                 break;
 
@@ -431,6 +425,7 @@ void AppControl::controlApplication()
                     }
                     setBtnAllFlgFalse();
                 }
+                Serial.println("◎MENU");
                 break;
 
             case EXIT:
@@ -450,6 +445,7 @@ void AppControl::controlApplication()
                     break;
                 }
                 mlcd.clearDisplay();
+                mlcd.fillBackgroundWhite();
                 setBtnAllFlgFalse(); // ボタンをfalseにセット
             default:
                 break;
@@ -476,6 +472,7 @@ void AppControl::controlApplication()
                 {
                     setStateAction(WBGT, EXIT);
                 }
+                Serial.println("◎WBGT");
                 break;
 
             case EXIT:
@@ -483,6 +480,7 @@ void AppControl::controlApplication()
                 setBtnAllFlgFalse();
                 setStateAction(MENU, ENTRY);
                 break;
+
             default:
                 break;
             }
@@ -492,8 +490,10 @@ void AppControl::controlApplication()
         case MUSIC_STOP:
             switch (getAction())
             {
+            
             case ENTRY:
                 // 停止画面表示現在の曲表示
+                mlcd.fillBackgroundWhite();
                 displayMusicInit();
                 setStateAction(MUSIC_STOP, DO);
                 break;
@@ -508,6 +508,7 @@ void AppControl::controlApplication()
                     displayNextMusic();
                     setBtnAllFlgFalse();
                 }
+                Serial.println("◎MUSIC_STOP");
                 break;
 
             case EXIT:
@@ -524,6 +525,7 @@ void AppControl::controlApplication()
                     setStateAction(MENU, ENTRY);
                 }
                 break;
+
             default:
                 break;
             }
@@ -553,16 +555,18 @@ void AppControl::controlApplication()
                     if (!mmplay.playMP3() || m_flag_btnA_is_pressed)
                     {
                         // 以下3行ほど記述
-                        mmplay.stopMP3();
                         setBtnAllFlgFalse();
-                        setStateAction(MUSIC_STOP, EXIT);
+                        mmplay.stopMP3();
+                        setStateAction(MUSIC_PLAY, EXIT);
+                        Serial.println(MUSIC_PLAY, EXIT);
                     }
                 }
+                Serial.println("◎MUSIC_PLAY");
                 break;
 
             case EXIT:
-                mlcd.clearDisplay();
-                setStateAction(MUSIC_PLAY, ENTRY);
+                setStateAction(MUSIC_STOP, ENTRY);
+                Serial.println(MUSIC_STOP, ENTRY);
                 break;
 
             default:
@@ -591,10 +595,10 @@ void AppControl::controlApplication()
                 {
                     setStateAction(MEASURE, EXIT);
                 }
+                Serial.println("◎MEASURE");
                 break;
 
             case EXIT:
-
                 mlcd.clearDisplay();
                 setBtnAllFlgFalse();
                 setStateAction(MENU, ENTRY);
@@ -628,6 +632,7 @@ void AppControl::controlApplication()
                     mmplay.stopMP3();
                     setStateAction(DATE, EXIT);
                 }
+                Serial.println("◎DATE");
                 break;
 
             case EXIT:

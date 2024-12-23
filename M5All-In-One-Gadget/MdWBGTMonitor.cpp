@@ -12,7 +12,7 @@ void MdWBGTMonitor::init()
 void MdWBGTMonitor::getWBGT(double* temperature, double* humidity, WbgtIndex* index)
 {
     dthsen.getTempHumi(temperature, humidity);
-    static int calc_index = 0.68 * (*temperature) + 0.12 * (*humidity);
+    int calc_index = 0.68 * (*temperature) + 0.12 * (*humidity);
     Serial.println(calc_index);
 
     if (calc_index < 15)
@@ -37,3 +37,4 @@ void MdWBGTMonitor::getWBGT(double* temperature, double* humidity, WbgtIndex* in
     }
     Serial.println(*index);
 }
+16.184 
